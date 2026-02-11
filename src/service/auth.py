@@ -7,7 +7,7 @@ from src.app.settings import jwt_settings
 from src.database.database import Database
 from src.database.tables import jwt_tokens_table
 from src.exceptions.auth import ExpiredTokenException, InvalidTokenException
-from src.schema.auth import JwtRequest, JwtResponse, VerifyJwtRequest
+from src.schema.auth import Jwt, JwtRequest, JwtResponse, VerifyJwtRequest
 from src.service.utils import UtilsService
 
 
@@ -68,8 +68,8 @@ class AuthService:
         )
 
     @classmethod
-    async def verify_token(cls, request: VerifyJwtRequest) -> None:
-        """Verify if the token is valid.
+    async def use_token(cls, request: VerifyJwtRequest) -> None:
+        """Use the JWT.
 
         Args:
             request (VerifyJwtRequest): Request data.
@@ -78,18 +78,52 @@ class AuthService:
             ExpiredTokenException: If the token expired.
             InvalidTokenException: If the token is invalid.
         """
-        query = (
+        query_verify = (
             jwt_tokens_table.select()
             .where(jwt_tokens_table.c.signature == request.signature)
             .where(jwt_tokens_table.c.access_group == UUID(request.access_group))
         )
-        row = await Database.fetch_one(query)
+        row_verify = await Database.fetch_one(query_verify)
 
-        if not row:
+        if not row_verify:
             raise InvalidTokenException()
 
-        current_timestamp = UtilsService.get_int_timestamp()
-        limit = UtilsService.get_int_timestamp(row.get("valid_until", 0))
+        token = Jwt(**row_verify)
 
-        if current_timestamp > limit:
+        current_timestamp = UtilsService.get_int_timestamp()
+        valid_until = UtilsService.get_int_timestamp(token.valid_until)
+
+        if current_timestamp > valid_until:
             raise ExpiredTokenException()
+
+        if (valid_until - current_timestamp) < 60:
+            valid_until = valid_until + 60
+
+        await cls.refresh_token(token, valid_until)
+
+        return JwtResponse(
+            id=token.id,
+            access_group=token.access_group,
+            signature=token.signature,
+            valid_until=UtilsService.get_timestamp_from_int(valid_until),
+            date_created=token.date_created,
+        )
+
+    @classmethod
+    async def refresh_token(cls, token: Jwt, valid_until: int) -> None:
+        """Refresh the Jwt.
+
+        Args:
+            token (Jwt): The jwt to be updated.
+            valid_until (int): When the token expires.
+        """
+        query_update = (
+            jwt_tokens_table.update()
+            .where(jwt_tokens_table.c.id == token.id)
+            .values(
+                valid_until=UtilsService.get_timestamp_from_int(valid_until),
+                last_refresh=UtilsService.get_current_datetime(),
+                times_refreshed=token.times_refreshed + 1,
+            )
+        )
+        await Database.execute(query_update)
