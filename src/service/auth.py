@@ -1,79 +1,95 @@
 """Auth service module."""
+
 import jwt
-import pytz
-from datetime import datetime
+from uuid import UUID
 
 from src.app.settings import jwt_settings
-from src.exceptions.auth import (
-    ExpiredTokenException,
-    InvalidTokenException
-)
-from src.schema.auth import JwtRequest, JwtResponse
+from src.database.database import Database
+from src.database.tables import jwt_tokens_table
+from src.exceptions.auth import ExpiredTokenException, InvalidTokenException
+from src.schema.auth import JwtRequest, JwtResponse, VerifyJwtRequest
+from src.service.utils import UtilsService
 
 
 class AuthService:
     """Auth service class."""
 
-    brazil_timezone = pytz.timezone("America/Sao_Paulo")
-    tokens: list[str] = []
-
     @classmethod
-    async def create_jwt(cls, request: JwtRequest) -> JwtResponse:
+    async def create_jwt(cls, request: JwtRequest, group_id: UUID) -> JwtResponse:
         """Create a jwt token.
-        
+
         Args:
             request (JwtRequest): The user payload.
+            group_name (UUID): The access group id.
 
         Returns:
             JwtResponse: The jwt token.
         """
         payload = request.model_dump()
-        payload["timestamp"] = await cls.__get_timestamp() + jwt_settings.JWT_VALID_TIME
+        date_created = UtilsService.get_current_datetime()
+        payload["timestamp"] = (
+            UtilsService.get_int_timestamp(date_created) + jwt_settings.JWT_VALID_TIME
+        )
         encoded = jwt.encode(
             payload=payload,
             key=jwt_settings.JWT_KEY,
-            algorithm=jwt_settings.JWT_ALGORITHM
+            algorithm=jwt_settings.JWT_ALGORITHM,
         )
-        cls.tokens.append(encoded)
+        token_id = UtilsService.create_uuid()
+        valid_until = UtilsService.get_timestamp_from_int(payload["timestamp"])
+        query = jwt_tokens_table.insert().values(
+            id=token_id,
+            access_group=group_id,
+            signature=encoded,
+            valid_until=valid_until,
+            date_created=date_created,
+        )
+        await Database.execute(query)
         return JwtResponse(
-            access_token=encoded,
-            valid_until=datetime.fromtimestamp(payload["timestamp"], cls.brazil_timezone)
+            id=token_id,
+            access_group=group_id,
+            signature=encoded,
+            valid_until=valid_until,
+            date_created=date_created,
         )
 
     @classmethod
     async def decode_jwt(cls, token: str) -> dict:
+        """Decode a jwt token.
 
+        Args:
+            token: The jwt token to be decoded.
+
+        Returns:
+            dict: The decoded token.
+        """
         return jwt.decode(
-            jwt=token,
-            key=jwt_settings.JWT_KEY,
-            algorithms=[jwt_settings.JWT_ALGORITHM]
+            jwt=token, key=jwt_settings.JWT_KEY, algorithms=[jwt_settings.JWT_ALGORITHM]
         )
 
     @classmethod
-    async def verify_token(cls, user_token: str) -> None:
+    async def verify_token(cls, request: VerifyJwtRequest) -> None:
         """Verify if the token is valid.
-        
+
         Args:
-            user_token (str): The user token.
+            request (VerifyJwtRequest): Request data.
 
         Raises:
             ExpiredTokenException: If the token expired.
             InvalidTokenException: If the token is invalid.
         """
-        for token in cls.tokens:
-            if user_token == token:
-                stored_token = await cls.decode_jwt(token)
-                timestamp = await cls.__get_timestamp() 
-                if timestamp <= stored_token["timestamp"]:
-                    return
-                raise ExpiredTokenException()
-        raise InvalidTokenException()
+        query = (
+            jwt_tokens_table.select()
+            .where(jwt_tokens_table.c.signature == request.signature)
+            .where(jwt_tokens_table.c.access_group == UUID(request.access_group))
+        )
+        row = await Database.fetch_one(query)
 
-    @classmethod
-    async def __get_timestamp(cls) -> int:
-        """Get the current timestamp.
-        
-        Returns:
-            int: The timestamp.
-        """
-        return int(datetime.now(cls.brazil_timezone).timestamp())
+        if not row:
+            raise InvalidTokenException()
+
+        current_timestamp = UtilsService.get_int_timestamp()
+        limit = UtilsService.get_int_timestamp(row.get("valid_until", 0))
+
+        if current_timestamp > limit:
+            raise ExpiredTokenException()
