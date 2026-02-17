@@ -8,10 +8,12 @@ from src.database.database import Database
 from src.database.tables import access_groups_table
 from src.exceptions.access_groups import (
     AccessGroupNotFoundException,
+    AccessGroupIdUUIDException,
     EmailAlreadyInUseException,
     InvalidCredentialsException,
 )
 from src.schema.access_groups import AccessGroupRequest, AccessGroupResponse
+from src.schema.passw import PasswordHandler
 from src.service.utils import UtilsService
 
 
@@ -35,6 +37,7 @@ class AccessGroupsService:
         """
         group_id = UtilsService.create_uuid()
         date_created = UtilsService.get_current_datetime()
+
         query = access_groups_table.insert().values(
             id=group_id,
             name=request.name,
@@ -78,6 +81,11 @@ class AccessGroupsService:
         Raises:
             AccessGroupNotFoundException: Raised when the access group is not found.
         """
+        try:
+            UUID(id)
+        except ValueError:
+            raise AccessGroupIdUUIDException()
+
         query = select(
             access_groups_table.c.name,
             access_groups_table.c.email,
@@ -98,13 +106,16 @@ class AccessGroupsService:
 
         Returns:
             UUID: The access group id.
+
+        Raises:
+            InvalidCredentialsException: Raised when the credentials are invalid.
         """
-        query = (
-            access_groups_table.select()
-            .where(access_groups_table.c.email == email)
-            .where(access_groups_table.c.password == password)
+        query = select(access_groups_table.c.id, access_groups_table.c.password).where(
+            access_groups_table.c.email == email
         )
         row = await Database.fetch_one(query)
         if not row:
-            InvalidCredentialsException
+            raise InvalidCredentialsException
+        if PasswordHandler.verify_password(password, row.get("password")) is False:
+            raise InvalidCredentialsException
         return row.get("id")

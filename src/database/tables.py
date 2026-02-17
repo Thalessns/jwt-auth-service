@@ -1,7 +1,7 @@
 """Module for defining the database tables."""
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, ForeignKey, String, Integer, DateTime, UUID
+from sqlalchemy import Column, ForeignKey, String, Integer, DateTime, UUID, Text
 
 from src.database.database import Base
 
@@ -18,16 +18,16 @@ class AccessGroups(Base):
     date_created = Column(DateTime, nullable=False)
 
 
-class JwtTokens(Base):
+class Jwts(Base):
     """The jwt tokens table structure."""
 
-    __tablename__ = "jwt_tokens"
+    __tablename__ = "jwts"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
     access_group = Column(
         UUID(as_uuid=True), ForeignKey("access_groups.id"), nullable=False
     )
-    signature = Column(String(100), nullable=False)
+    signature = Column(Text, nullable=False)
     valid_until = Column(DateTime, nullable=False)
     date_created = Column(DateTime, nullable=False)
     last_refresh = Column(DateTime, nullable=True)
@@ -37,4 +37,4 @@ class JwtTokens(Base):
 
 
 access_groups_table = AccessGroups.__table__
-jwt_tokens_table = JwtTokens.__table__
+jwts_table = Jwts.__table__

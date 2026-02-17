@@ -2,7 +2,9 @@
 
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
+
+from src.exceptions.access_groups import AccessGroupIdUUIDException
 
 
 class Jwt(BaseModel):
@@ -39,3 +41,22 @@ class VerifyJwtRequest(BaseModel):
 
     access_group: str
     signature: str
+
+    @field_validator("access_group")
+    def validate_uuid(cls, value: str) -> UUID:
+        """Validate that the access group is a valid UUID.
+
+        Args:
+            value (str): The access group id.
+
+        Returns:
+            UUID: The access group id as a UUID.
+
+        Raises:
+            AccessGroupIdUUIDException: If the access group id is not a valid UUID.
+        """
+        try:
+            UUID(value)
+        except ValueError:
+            raise AccessGroupIdUUIDException()
+        return UUID(value)

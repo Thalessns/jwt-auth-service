@@ -5,7 +5,7 @@ from uuid import UUID
 
 from src.app.settings import jwt_settings
 from src.database.database import Database
-from src.database.tables import jwt_tokens_table
+from src.database.tables import jwts_table
 from src.exceptions.auth import ExpiredTokenException, InvalidTokenException
 from src.schema.auth import Jwt, JwtRequest, JwtResponse, VerifyJwtRequest
 from src.service.utils import UtilsService
@@ -37,7 +37,7 @@ class AuthService:
         )
         token_id = UtilsService.create_uuid()
         valid_until = UtilsService.get_timestamp_from_int(payload["timestamp"])
-        query = jwt_tokens_table.insert().values(
+        query = jwts_table.insert().values(
             id=token_id,
             access_group=group_id,
             signature=encoded,
@@ -79,9 +79,9 @@ class AuthService:
             InvalidTokenException: If the token is invalid.
         """
         query_verify = (
-            jwt_tokens_table.select()
-            .where(jwt_tokens_table.c.signature == request.signature)
-            .where(jwt_tokens_table.c.access_group == UUID(request.access_group))
+            jwts_table.select()
+            .where(jwts_table.c.signature == request.signature)
+            .where(jwts_table.c.access_group == request.access_group)
         )
         row_verify = await Database.fetch_one(query_verify)
 
@@ -118,8 +118,8 @@ class AuthService:
             valid_until (int): When the token expires.
         """
         query_update = (
-            jwt_tokens_table.update()
-            .where(jwt_tokens_table.c.id == token.id)
+            jwts_table.update()
+            .where(jwts_table.c.id == token.id)
             .values(
                 valid_until=UtilsService.get_timestamp_from_int(valid_until),
                 last_refresh=UtilsService.get_current_datetime(),

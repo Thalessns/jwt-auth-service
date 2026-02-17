@@ -26,7 +26,7 @@ class UtilsService:
         Returns:
             datetime: The current datetime.
         """
-        return datetime.now(cls.__brazil_timezone)
+        return datetime.now(cls.__brazil_timezone).replace(tzinfo=None)
 
     @classmethod
     def get_int_timestamp(cls, current: datetime = None) -> int:
@@ -52,4 +52,6 @@ class UtilsService:
         Returns:
             datetime: The converted datetime.
         """
-        return datetime.fromtimestamp(timestamp, cls.__brazil_timezone)
+        return datetime.fromtimestamp(timestamp, cls.__brazil_timezone).replace(
+            tzinfo=None
+        )

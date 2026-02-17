@@ -24,3 +24,10 @@ class InvalidCredentialsException(CustomBaseException):
 
     STATUS_CODE = status.HTTP_401_UNAUTHORIZED
     DETAIL = "The group credentials are invalid, check it and try again."
+
+
+class AccessGroupIdUUIDException(CustomBaseException):
+    """Exception raised when the access group id is invalid."""
+
+    STATUS_CODE = status.HTTP_400_BAD_REQUEST
+    DETAIL = "The access group id must be a valid UUID, check it and try again."
