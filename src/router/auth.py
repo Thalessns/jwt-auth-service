@@ -26,10 +26,10 @@ async def create_jwt(request: JwtRequest):
 
 
 @auth_router.put("/", status_code=status.HTTP_200_OK)
-async def verify_jwt(request: VerifyJwtRequest):
+async def use_jwt(request: VerifyJwtRequest):
     """Verify if is the jwt is valid.
 
     Args:
         request (VerifyJwtRequest): The request data.
     """
-    return await AuthService.verify_token(request)
+    return await AuthService.use_token(request)
