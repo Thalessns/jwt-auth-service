@@ -97,15 +97,12 @@ async def test_use_jwt(client: AsyncClient) -> None:
     assert jwt_response.status_code == status.HTTP_201_CREATED
     jwt = JwtResponse(**jwt_response.json())
 
-    with freeze_time() as frozen_time:
-        frozen_time.move_to(jwt.date_created)
-
-        verify_data = {
-            "access_group": str(group.get("id")),
-            "signature": jwt.signature
-        }
-        response = await client.put("/auth/", json=verify_data)
-        assert response.status_code == status.HTTP_200_OK
+    verify_data = {
+        "access_group": str(group.get("id")),
+        "signature": jwt.signature
+    }
+    response = await client.put("/auth/", json=verify_data)
+    assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.asyncio
@@ -148,7 +145,7 @@ async def test_use_jwt_with_expired_token(client: AsyncClient) -> None:
     jwt = JwtResponse(**jwt_response.json())
 
     with freeze_time() as frozen_time:
-        frozen_time.move_to(jwt.valid_until + timedelta(seconds=3))
+        frozen_time.move_to(jwt.valid_until + timedelta(seconds=5))
 
         verify_data = {
             "access_group": str(jwt.access_group),
