@@ -16,18 +16,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="JWT Auth Service", version="0.0.1", lifespan=lifespan)
+prefix = "/api"
 
-
-@app.get("/", status_code=status.HTTP_200_OK)
-async def root() -> str:
+@app.get(prefix+"/", status_code=status.HTTP_200_OK)
+async def root() -> dict[str, str]:
     """Service root endpoint.
 
     Returns:
-        str: Message to the user.
+        dict[str, str]: Message to the user.
     """
-    return "The JWT Auth Service is running!"
+    return {"message": "The JWT Auth Service is running!"}
 
 
-prefix = "/api"
 app.include_router(access_groups_router, prefix=prefix)
 app.include_router(auth_router, prefix=prefix)

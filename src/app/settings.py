@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 class EntryPointSettings(BaseSettings):
     """Settings for the app entrypoint."""
 
-    APP_HOST: str = "127.0.0.1"
+    APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 5001
     APP_RELOAD: bool = False
 

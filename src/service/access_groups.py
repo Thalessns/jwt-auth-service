@@ -50,7 +50,7 @@ class AccessGroupsService:
         except IntegrityError:
             raise EmailAlreadyInUseException(email=request.email)
         return AccessGroupResponse(
-            name=request.name, email=request.email, date_created=date_created
+            id=group_id, name=request.name, email=request.email, date_created=date_created
         )
 
     @classmethod
@@ -61,6 +61,7 @@ class AccessGroupsService:
             list[AccessGroupResponse]: All the access groups.
         """
         query = select(
+            access_groups_table.c.id,
             access_groups_table.c.name,
             access_groups_table.c.email,
             access_groups_table.c.date_created,
@@ -85,8 +86,9 @@ class AccessGroupsService:
             UUID(id)
         except ValueError:
             raise AccessGroupIdUUIDException()
-
+        id = UUID(id)
         query = select(
+            access_groups_table.c.id,
             access_groups_table.c.name,
             access_groups_table.c.email,
             access_groups_table.c.date_created,
@@ -115,7 +117,7 @@ class AccessGroupsService:
         )
         row = await Database.fetch_one(query)
         if not row:
-            raise InvalidCredentialsException
+            raise InvalidCredentialsException()
         if PasswordHandler.verify_password(password, row.get("password")) is False:
-            raise InvalidCredentialsException
+            raise InvalidCredentialsException()
         return row.get("id")

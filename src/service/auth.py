@@ -68,11 +68,14 @@ class AuthService:
         )
 
     @classmethod
-    async def use_token(cls, request: VerifyJwtRequest) -> None:
+    async def use_token(cls, request: VerifyJwtRequest) -> JwtResponse:
         """Use the JWT.
 
         Args:
             request (VerifyJwtRequest): Request data.
+
+        Returns:
+            JwtResponse: The jwt token.
 
         Raises:
             ExpiredTokenException: If the token expired.
@@ -92,7 +95,7 @@ class AuthService:
 
         current_timestamp = UtilsService.get_int_timestamp()
         valid_until = UtilsService.get_int_timestamp(token.valid_until)
-
+        
         if current_timestamp > valid_until:
             raise ExpiredTokenException()
 

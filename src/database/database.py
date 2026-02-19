@@ -12,7 +12,7 @@ Base = declarative_base(metadata=MetaData())
 class Database:
     """The database class, used to perform operations."""
 
-    engine = create_async_engine(database_settings.conn_url)
+    engine = create_async_engine(database_settings.CONN_URL)
 
     @classmethod
     async def fetch_one(cls, query) -> dict | None:
