@@ -96,7 +96,7 @@ async def test_use_jwt(client: AsyncClient) -> None:
     jwt = JwtResponse(**jwt_response.json())
 
     verify_data = {
-        "access_group": group.get("id"),
+        "access_group": str(group.get("id")),
         "signature": jwt.signature
     }
     response = await client.put("/auth/", json=verify_data)
