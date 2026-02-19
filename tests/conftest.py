@@ -9,7 +9,7 @@ from src.app.settings import entry_settings
 app_url = f"http://{entry_settings.APP_HOST}:{entry_settings.APP_PORT}/api"
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def client():
     """Fixture for the async HTTP client with lifespan management."""
     async with LifespanManager(app) as manager:
