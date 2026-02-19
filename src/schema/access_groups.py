@@ -1,5 +1,6 @@
 """Module for the access groups schemas."""
 
+from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, field_validator
 
@@ -29,6 +30,7 @@ class AccessGroupRequest(BaseModel):
 class AccessGroupResponse(BaseModel):
     """Schema to return a access group."""
 
+    id: UUID
     name: str
     email: EmailStr
     date_created: datetime

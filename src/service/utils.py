@@ -2,7 +2,7 @@
 
 import pytz
 from uuid import UUID, uuid4
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class UtilsService:
@@ -26,7 +26,7 @@ class UtilsService:
         Returns:
             datetime: The current datetime.
         """
-        return datetime.now(cls.__brazil_timezone).replace(tzinfo=None)
+        return datetime.now(cls.__brazil_timezone)
 
     @classmethod
     def get_int_timestamp(cls, current: datetime = None) -> int:
@@ -52,6 +52,5 @@ class UtilsService:
         Returns:
             datetime: The converted datetime.
         """
-        return datetime.fromtimestamp(timestamp, cls.__brazil_timezone).replace(
-            tzinfo=None
-        )
+        utc_datetime = datetime.fromtimestamp(timestamp, timezone.utc)
+        return utc_datetime.astimezone(cls.__brazil_timezone)

@@ -10,7 +10,7 @@ auth_router = APIRouter(prefix="/auth")
 
 
 @auth_router.post("/", status_code=status.HTTP_201_CREATED, response_model=JwtResponse)
-async def create_jwt(request: JwtRequest):
+async def create_jwt(request: JwtRequest) -> JwtResponse:
     """Creates a new jwt token.
 
     Args:
@@ -26,10 +26,13 @@ async def create_jwt(request: JwtRequest):
 
 
 @auth_router.put("/", status_code=status.HTTP_200_OK)
-async def use_jwt(request: VerifyJwtRequest):
+async def use_jwt(request: VerifyJwtRequest) -> JwtResponse:
     """Verify if is the jwt is valid.
 
     Args:
         request (VerifyJwtRequest): The request data.
+
+    Returns:
+        JwtResponse: The jwt token.
     """
     return await AuthService.use_token(request)

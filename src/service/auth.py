@@ -68,11 +68,14 @@ class AuthService:
         )
 
     @classmethod
-    async def use_token(cls, request: VerifyJwtRequest) -> None:
+    async def use_token(cls, request: VerifyJwtRequest) -> JwtResponse:
         """Use the JWT.
 
         Args:
             request (VerifyJwtRequest): Request data.
+
+        Returns:
+            JwtResponse: The jwt token.
 
         Raises:
             ExpiredTokenException: If the token expired.

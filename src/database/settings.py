@@ -1,10 +1,12 @@
 """Settings for the database."""
 
+from pydantic_settings import BaseSettings
 
-class DatabaseSettings:
+
+class DatabaseSettings(BaseSettings):
     """Class for the database settings."""
 
-    conn_url: str = "sqlite+aiosqlite:///src/database/data/db.sql"
+    CONN_URL: str = "sqlite+aiosqlite:///src/database/data/db.sql"
 
 
 database_settings = DatabaseSettings()
