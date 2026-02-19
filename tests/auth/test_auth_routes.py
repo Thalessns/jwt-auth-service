@@ -87,7 +87,6 @@ async def test_use_jwt(client: AsyncClient) -> None:
     }
     group_response = await client.post("/access-groups/", json=group_data)
     assert group_response.status_code == status.HTTP_201_CREATED
-    group = group_response.json()
 
     jwt_request = {
         "email": group_data["email"],
