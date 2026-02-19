@@ -103,22 +103,6 @@ async def test_use_jwt(client: AsyncClient) -> None:
     response = await client.put("/auth/", json=verify_data)
     assert response.status_code == status.HTTP_200_OK
 
-    jwt_exp_response = await client.post("/auth/", json=jwt_request)
-    assert jwt_exp_response.status_code == status.HTTP_201_CREATED
-    jwt_exp = JwtResponse(**jwt_exp_response.json())
-
-    with freeze_time() as frozen_time:
-        frozen_time.move_to(jwt_exp.valid_until + timedelta(seconds=5))
-
-        verify_data = {
-            "access_group": str(jwt_exp.access_group),
-            "signature": str(jwt_exp.signature)
-        }
-
-        response_exp = await client.put("/auth/", json=verify_data)
-        assert response_exp.status_code == ExpiredTokenException.STATUS_CODE
-        assert response_exp.json()["detail"] == ExpiredTokenException.DETAIL
-
 
 @pytest.mark.asyncio
 async def test_use_jwt_with_invalid_signature(client: AsyncClient) -> None:
@@ -143,3 +127,36 @@ async def test_use_jwt_with_invalid_signature(client: AsyncClient) -> None:
     assert response.status_code == InvalidTokenException.STATUS_CODE
     assert response.json()["detail"] == InvalidTokenException.DETAIL
 
+
+@pytest.mark.asyncio
+async def test_use_jwt_with_expired_token(client: AsyncClient) -> None:
+    """Test using a JWT token that has expired.
+    
+     Args:
+        client (AsyncClient): The async httpx Client fixture for making requests.
+    """
+    jwt_request = {
+        "email": "use-jwt@example.com",
+        "password": "securepassword123"
+    }
+    jwt_response = await client.post("/auth/", json=jwt_request)
+    assert jwt_response.status_code == status.HTTP_201_CREATED
+    jwt = JwtResponse(**jwt_response.json())
+
+    response_success = await client.put("/auth/", json={
+        "access_group": str(jwt.access_group),
+        "signature": jwt.signature
+    })
+    assert response_success.status_code == status.HTTP_200_OK
+
+    with freeze_time() as frozen_time:
+        frozen_time.move_to(jwt.valid_until + timedelta(seconds=5))
+
+        verify_data = {
+            "access_group": str(jwt.access_group),
+            "signature": str(jwt.signature)
+        }
+
+        response_fail = await client.put("/auth/", json=verify_data)
+        assert response_fail.status_code == ExpiredTokenException.STATUS_CODE
+        assert response_fail.json()["detail"] == ExpiredTokenException.DETAIL
