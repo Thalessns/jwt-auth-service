@@ -1,0 +1,17 @@
+
+services:
+
+  jwt-auth:
+    image: jwt-auth-service:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - jwt-auth-data:/var/lib/jwt-auth
+    restart: unless-stopped
+
+volumes:
+  jwt-auth-data:
+
