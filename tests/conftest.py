@@ -5,8 +5,16 @@ from httpx import ASGITransport, AsyncClient
 
 from src.app.main import app
 from src.app.settings import entry_settings
+from src.database.database import Database
 
 app_url = f"http://{entry_settings.APP_HOST}:{entry_settings.APP_PORT}/api"
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def drop_tables_after_tests():
+    """Fixture to drop database tables after all tests have run."""
+    yield
+    await Database.drop_models()
 
 
 @pytest_asyncio.fixture(scope="function")
