@@ -28,11 +28,11 @@ async def test_create_jwt(client: AsyncClient) -> None:
     group = group_response.json()
 
     request_data = {
-        "email": group_data["email"],
+        "email": group["email"],
         "password": group_data["password"]
     }
     response = await client.post("/auth/", json=request_data)
-    print(response)
+
     assert response.status_code == status.HTTP_201_CREATED
     response_data = response.json()
     assert response_data.get("access_group") == group.get("id")
