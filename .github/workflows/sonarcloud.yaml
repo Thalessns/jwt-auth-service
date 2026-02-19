@@ -33,7 +33,7 @@ jobs:
       # 4. Executar os testes e gerar os relatórios
       - name: Run tests with coverage
         run: |
-          uv run pytest --cov=./src --cov-report=xml:coverage.xml --junitxml=tests/test-results.xml tests/ -vx
+          uv run pytest --cov=./src --cov-report=xml:coverage.xml --junitxml=tests/test-results.xml tests/ -v
 
       # 5. Escanear o código com o SonarCloud
       - name: SonarCloud Scan
