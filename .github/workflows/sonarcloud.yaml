@@ -12,6 +12,12 @@ jobs:
     name: Run Tests and SonarCloud Scan
     runs-on: ubuntu-latest
     steps:
+      # 0. Configurando horário
+      - name: Set timezone to America/Sao_Paulo
+          uses: szenius/set-timezone@v1.2
+          with:
+            timezoneLinux: "America/Sao_Paulo"
+
       # 1. Baixar o código do repositório
       - uses: actions/checkout@v4
         with:

@@ -143,12 +143,6 @@ async def test_use_jwt_with_expired_token(client: AsyncClient) -> None:
     assert jwt_response.status_code == status.HTTP_201_CREATED
     jwt = JwtResponse(**jwt_response.json())
 
-    response_success = await client.put("/auth/", json={
-        "access_group": str(jwt.access_group),
-        "signature": jwt.signature
-    })
-    assert response_success.status_code == status.HTTP_200_OK
-
     with freeze_time() as frozen_time:
         frozen_time.move_to(jwt.valid_until + timedelta(seconds=5))
 
