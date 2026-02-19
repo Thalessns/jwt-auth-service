@@ -2,6 +2,8 @@
 import pytest
 from fastapi import status
 from httpx import AsyncClient
+from freezegun import freeze_time
+from datetime import timedelta
 
 from src.exceptions.access_groups import InvalidCredentialsException
 from src.exceptions.auth import (
@@ -95,12 +97,15 @@ async def test_use_jwt(client: AsyncClient) -> None:
     assert jwt_response.status_code == status.HTTP_201_CREATED
     jwt = JwtResponse(**jwt_response.json())
 
-    verify_data = {
-        "access_group": str(group.get("id")),
-        "signature": jwt.signature
-    }
-    response = await client.put("/auth/", json=verify_data)
-    assert response.status_code == status.HTTP_200_OK
+    with freeze_time() as frozen_time:
+        frozen_time.move_to(jwt.date_created)
+
+        verify_data = {
+            "access_group": str(group.get("id")),
+            "signature": jwt.signature
+        }
+        response = await client.put("/auth/", json=verify_data)
+        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.asyncio
@@ -141,9 +146,6 @@ async def test_use_jwt_with_expired_token(client: AsyncClient) -> None:
     jwt_response = await client.post("/auth/", json=jwt_request)
     assert jwt_response.status_code == status.HTTP_201_CREATED
     jwt = JwtResponse(**jwt_response.json())
-
-    from freezegun import freeze_time
-    from datetime import timedelta
 
     with freeze_time() as frozen_time:
         frozen_time.move_to(jwt.valid_until + timedelta(seconds=3))
