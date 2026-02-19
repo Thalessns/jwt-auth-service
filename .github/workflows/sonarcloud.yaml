@@ -35,7 +35,12 @@ jobs:
         run: |
           uv run pytest --cov=./src --cov-report=xml:coverage.xml --junitxml=tests/test-results.xml tests/ -v
 
-      # 5. Escanear o código com o SonarCloud
+      # 5 - Limpando banco de dados de testes
+      - name:
+        run: |
+          rm -rf ./src/database/data/db_test.sql
+
+      # 6. Escanear o código com o SonarCloud
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
