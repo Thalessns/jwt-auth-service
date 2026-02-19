@@ -2,7 +2,6 @@
 import pytest
 from fastapi import status
 from httpx import AsyncClient
-from time import sleep
 
 from src.exceptions.access_groups import InvalidCredentialsException
 from src.exceptions.auth import (
@@ -10,7 +9,6 @@ from src.exceptions.auth import (
     InvalidTokenException
 )
 from src.schema.auth import JwtResponse
-from src.service.utils import UtilsService
 
 
 @pytest.mark.asyncio
@@ -34,7 +32,7 @@ async def test_create_jwt(client: AsyncClient) -> None:
         "password": group_data["password"]
     }
     response = await client.post("/auth/", json=request_data)
-
+    print(response)
     assert response.status_code == status.HTTP_201_CREATED
     response_data = response.json()
     assert response_data.get("access_group") == group.get("id")
