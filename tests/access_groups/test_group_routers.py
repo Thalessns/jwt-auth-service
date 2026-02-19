@@ -1,4 +1,5 @@
 """Module for testing access group routes."""
+
 import pytest
 from uuid import uuid4
 from fastapi import status
@@ -7,7 +8,7 @@ from httpx import AsyncClient
 from src.exceptions.access_groups import (
     EmailAlreadyInUseException,
     AccessGroupNotFoundException,
-    AccessGroupIdUUIDException
+    AccessGroupIdUUIDException,
 )
 from src.schema.access_groups import AccessGroupResponse
 
@@ -22,7 +23,7 @@ async def test_create_access_group(client: AsyncClient) -> None:
     data = {
         "name": "Test Access Group",
         "email": "accessgroup@example.com",
-        "password": "securepassword123"
+        "password": "securepassword123",
     }
     response = await client.post("/access-groups/", json=data)
 
@@ -43,12 +44,14 @@ async def test_create_access_group_with_existing_email(client: AsyncClient) -> N
     data = {
         "name": "Test Access Group",
         "email": "accessgroup@example.com",
-        "password": "securepassword123"
+        "password": "securepassword123",
     }
     response = await client.post("/access-groups/", json=data)
 
     assert response.status_code == EmailAlreadyInUseException.STATUS_CODE
-    assert response.json()["detail"] == EmailAlreadyInUseException.DETAIL.format(email=data["email"])
+    assert response.json()["detail"] == EmailAlreadyInUseException.DETAIL.format(
+        email=data["email"]
+    )
 
 
 @pytest.mark.asyncio
@@ -74,14 +77,14 @@ async def test_get_access_group_by_id(client: AsyncClient) -> None:
     data = {
         "name": "Test Get Access Group",
         "email": "accessgroupget@example.com",
-        "password": "securepassword123"
+        "password": "securepassword123",
     }
     response = await client.post("/access-groups/", json=data)
     assert response.status_code == status.HTTP_201_CREATED
 
     access_groups = response.json()
     group_id = access_groups["id"]
-    
+
     response = await client.get(f"/access-groups/by-id?id={group_id}")
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == group_id
@@ -96,9 +99,11 @@ async def test_get_access_group_by_id_not_found(client: AsyncClient) -> None:
     """
     id = str(uuid4())
     response = await client.get(f"/access-groups/by-id?id={id}")
-    
+
     assert response.status_code == AccessGroupNotFoundException.STATUS_CODE
-    assert response.json()["detail"] == AccessGroupNotFoundException.DETAIL.format(id=id)
+    assert response.json()["detail"] == AccessGroupNotFoundException.DETAIL.format(
+        id=id
+    )
 
 
 @pytest.mark.asyncio
@@ -110,6 +115,6 @@ async def test_get_access_group_by_id_invalid_uuid(client: AsyncClient) -> None:
     """
     invalid_id = "invalid-uuid"
     response = await client.get(f"/access-groups/by-id?id={invalid_id}")
-    
+
     assert response.status_code == AccessGroupIdUUIDException.STATUS_CODE
     assert response.json()["detail"] == AccessGroupIdUUIDException.DETAIL

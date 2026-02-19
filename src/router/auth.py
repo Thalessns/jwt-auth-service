@@ -25,7 +25,7 @@ async def create_jwt(request: JwtRequest) -> JwtResponse:
     return await AuthService.create_jwt(request, group_id)
 
 
-@auth_router.put("/", status_code=status.HTTP_200_OK, response_model=JwtResponse)
+@auth_router.put("/", status_code=status.HTTP_200_OK)
 async def use_jwt(request: VerifyJwtRequest) -> JwtResponse:
     """Verify if is the jwt is valid.
 

@@ -70,10 +70,9 @@ class Database:
         """Initialize the database tables."""
         async with cls.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-    
+
     @classmethod
     async def drop_models(cls) -> None:
         """Drop the database tables."""
         async with cls.engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
-

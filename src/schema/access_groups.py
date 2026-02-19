@@ -1,4 +1,5 @@
 """Module for the access groups schemas."""
+
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, field_validator

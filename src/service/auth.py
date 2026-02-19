@@ -95,7 +95,7 @@ class AuthService:
 
         current_timestamp = UtilsService.get_int_timestamp()
         valid_until = UtilsService.get_int_timestamp(token.valid_until)
-        
+
         if current_timestamp > valid_until:
             raise ExpiredTokenException()
 

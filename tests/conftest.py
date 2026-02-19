@@ -1,4 +1,5 @@
 """Conftest module for pytest configuration."""
+
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
@@ -21,5 +22,7 @@ async def drop_tables_after_tests():
 async def client():
     """Fixture for the async HTTP client with lifespan management."""
     async with LifespanManager(app) as manager:
-        async with AsyncClient(transport=ASGITransport(app=manager.app), base_url=app_url) as http_client:
+        async with AsyncClient(
+            transport=ASGITransport(app=manager.app), base_url=app_url
+        ) as http_client:
             yield http_client

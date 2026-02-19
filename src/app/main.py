@@ -18,7 +18,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="JWT Auth Service", version="0.0.1", lifespan=lifespan)
 prefix = "/api"
 
-@app.get(prefix+"/", status_code=status.HTTP_200_OK)
+
+@app.get(prefix + "/", status_code=status.HTTP_200_OK)
 async def root() -> dict[str, str]:
     """Service root endpoint.
 

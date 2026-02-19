@@ -1,4 +1,5 @@
 """Settings for the database."""
+
 from pydantic_settings import BaseSettings
 
 
