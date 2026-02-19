@@ -8,9 +8,7 @@ from src.service.access_groups import AccessGroupsService
 access_groups_router = APIRouter(prefix="/access-groups")
 
 
-@access_groups_router.post(
-    "/", status_code=status.HTTP_201_CREATED, response_model=AccessGroupResponse
-)
+@access_groups_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_group_access(request: AccessGroupRequest) -> AccessGroupResponse:
     """Create a new group access.
 
@@ -23,9 +21,7 @@ async def create_group_access(request: AccessGroupRequest) -> AccessGroupRespons
     return await AccessGroupsService.create_access_group(request)
 
 
-@access_groups_router.get(
-    "/", status_code=status.HTTP_200_OK, response_model=list[AccessGroupResponse]
-)
+@access_groups_router.get("/", status_code=status.HTTP_200_OK)
 async def get_all() -> list[AccessGroupResponse]:
     """Get all access groups.
 
@@ -35,9 +31,7 @@ async def get_all() -> list[AccessGroupResponse]:
     return await AccessGroupsService.get_all()
 
 
-@access_groups_router.get(
-    "/by-id", status_code=status.HTTP_200_OK, response_model=AccessGroupResponse
-)
+@access_groups_router.get("/by-id", status_code=status.HTTP_200_OK)
 async def get_by_id(id: str) -> AccessGroupResponse:
     """Get an access group data by id.
 

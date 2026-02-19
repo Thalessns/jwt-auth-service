@@ -9,7 +9,7 @@ from src.service.auth import AuthService
 auth_router = APIRouter(prefix="/auth")
 
 
-@auth_router.post("/", status_code=status.HTTP_201_CREATED, response_model=JwtResponse)
+@auth_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_jwt(request: JwtRequest) -> JwtResponse:
     """Creates a new jwt token.
 
