@@ -24,7 +24,7 @@ cd jwt-auth-service
 
 2. Inicie os containers:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 3. O serviço estará disponível em: `http://localhost:5001`
