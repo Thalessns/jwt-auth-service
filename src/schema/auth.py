@@ -15,7 +15,7 @@ class Jwt(BaseModel):
     signature: str
     valid_until: datetime
     date_created: datetime
-    last_refresh: datetime | None
+    last_refresh: datetime | None = None
     times_refreshed: int
 
 
